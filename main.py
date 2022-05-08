@@ -1,6 +1,5 @@
 # This is a sample Python script.
 import copy
-
 from core import *
 import json
 

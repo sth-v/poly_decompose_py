@@ -2,7 +2,6 @@ import osmnx as ox
 import networkx as nx
 import matplotlib.pyplot as plt
 from shapely.geometry import Point, Polygon, LineString, MultiLineString
-import copy
 
 class GoalPolygon:
 
@@ -12,7 +11,7 @@ class GoalPolygon:
         self.buffer_dict = 500
         self.network_type = 'all'
         self.frame = ox.geocode_to_gdf(self.osm_name, buffer_dist=self.buffer_dict)
-        self._graph =  ox.graph_from_place(self.osm_name, network_type=self.network_type, buffer_dist=self.buffer_dict)
+        self._graph = ox.graph_from_place(self.osm_name, network_type=self.network_type, buffer_dist=self.buffer_dict)
         self.frameproj = ox.project_gdf(ox.geocode_to_gdf(self.osm_name))
         self.polygon = self.coordinates_poly()
         self.polygon_coords = self.get_polygon_coords()
