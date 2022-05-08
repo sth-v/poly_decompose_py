@@ -1,11 +1,11 @@
-from functools import reduce
 from operator import add
+import numpy as np
 
 
 def uds_metric(area, la, lb):
     ans = add(
-        reduce(add, la) * 1e-3,
-        (reduce(add, lb) * 1e-3) / 2) / (area * 1e-6)
+        np.add.reduce(la) * 1e-3,
+        (np.add.reduce(lb) * 1e-3) / 2) / (area * 1e-6)
     return ans
 
 
