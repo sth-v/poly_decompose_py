@@ -1,7 +1,7 @@
 import osmnx as ox
-import networkx as nx
-import matplotlib.pyplot as plt
-from shapely.geometry import Point, Polygon, LineString, MultiLineString
+
+from shapely.geometry import Polygon
+
 
 class GoalPolygon:
 
