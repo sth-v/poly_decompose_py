@@ -82,7 +82,8 @@ def vector_search(point_list, key):
     segments = [double_points[cross[c]:cross[c + 1]] for c in range(len(cross) - 1)]
     return segments
 
-
+c = vector_search(coor_list, 0.7)
+print(c)
 def clusterize(poly_edges):
     lines = []
     vectors_list = []
@@ -103,8 +104,8 @@ def clusterize(poly_edges):
     return cross_list
 
 
-v = clusterize(poly)
-print(v)
+#v = clusterize(poly)
+
 data = np.asarray([[0,0.5056470286775836, 0.12269896816725095, 0.9999081361724104, 0.9999939171214292, 0.9999993317127042],
         [0.5056470286775836, 0,0.6076836895225528, 0.855807499739078, 0.8609715349701016, 0.8621552924233207],
         [0.12269896816725095, 0.6076836895225528,0, 0.9940158642276464, 0.992865864172556, 0.9925851239501953],
@@ -112,21 +113,5 @@ data = np.asarray([[0,0.5056470286775836, 0.12269896816725095, 0.999908136172410
         [0.9999939171214292, 0.8609715349701016, 0.992865864172556, 0.010066604913686106,0, 0.002331840941869334],
         [0.9999993317127042, 0.8621552924233207, 0.9925851239501953, 0.012398300333692436, 0.002331840941869334,0]])
 
-'''def gaussian(x, mu, sig):
-    return np.exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
-
-for i in data:
-    fg = gaussian(i, 0,0.2)
-    #print(fg)
-    print([round(f) for f in fg])'''
 
 
-p = expit(data)
-print(p)
-
-'''Z = ward(pdist(data))
-fg =fcluster(Z, t=1, criterion='distance')
-
-clustering = AffinityPropagation(random_state=5).fit(data)
-
-print(fg)'''
