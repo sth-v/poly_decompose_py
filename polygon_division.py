@@ -51,6 +51,7 @@ def points_to_point_chain(points, length=3):
         zip_list.append(list(dq))
     return np.asarray(list(zip(*zip_list)))
 
+
 def is_convex(points_list, polygon):
     vals = list(islice(cycle(range(len(points_list))), 0, len(points_list) + 2))
     concave = []
@@ -77,19 +78,6 @@ def vector_search(point_list, key):
             pass
     cross = [*cr, cr[0] + cr[-1] + 1]
     double_points = [*range(len(point_list)), *range(len(point_list))]
-    segments = [double_points[cross[c]:cross[c + 1]] for c in range(len(cross) - 1)]
+    segments = [double_points[cross[c]:cross[c + 1] + 1] for c in range(len(cross) - 1)]
     return segments
 
-
-ppp = [[390688.948536, 6.1691e+6],
-       [390779.717631, 6.1687e+6],
-       [391376.941289, 6.1689e+6],
-       [391167.048514, 6.1693e+6],
-       [390888.987181, 6.1693e+6],
-       [390787.08947, 6.1696e+6],
-       [390723.156434, 6.1696e+6],
-       [390713.855884, 6.1696e+6],
-       [390648.147767, 6.1696e+6],
-       [390710.600086, 6.1694e+6],
-       [390638.302192, 6.1694e+6],
-       [390729.226858, 6.1691e+6]]
