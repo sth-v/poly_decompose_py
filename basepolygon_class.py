@@ -85,3 +85,9 @@ class GoalPolygon:
         polygon = self.frameproj.boundary[0]
         coordinates = list(polygon.coords)
         return coordinates
+
+
+
+place = GoalPolygon('Odintsovo-1')
+pp = place.network_edges_coords()
+print(pp)
