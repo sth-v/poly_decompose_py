@@ -85,3 +85,9 @@ class GoalPolygon:
         polygon = self.frameproj.boundary[0]
         coordinates = list(polygon.coords)
         return coordinates
+
+    def graph_to_gdfs(self):
+        nodes, edges = ox.graph_to_gdfs(self.network)
+        setattr(self, 'nodes', nodes)
+        setattr(self, 'edges', edges)
+        return nodes, edges
