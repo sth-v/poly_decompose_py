@@ -45,10 +45,19 @@ def rotate2d(vec, theta):
     return rot_matrix(theta) @ np.asarray(vec)
 
 
+def choise_axis_2d(vecs, k=(0, 3, 4, 7)):
+    labels = []
+    for vec in vecs[..., :2]:
+        ang = angle(np.array([1, 0]), np.asarray(vec))
+        aa, _ = divmod(ang, pi / 4)
+        labels.append(0) if aa in k else labels.append(1)
+    return labels
+
+
 def basis_to_custom_canonical_form(vecs):
     x_like = [0, 3, 4, 7]  # y_like = [1, 2, 5, 6]
 
-    l, th, thr = [], [], []
+    l, th, thr, axis = [], [], [], []
 
     for vec in vecs[..., :2]:
 
@@ -61,10 +70,12 @@ def basis_to_custom_canonical_form(vecs):
             th_ = theta(vec_x)
             th.append(th_)
             thr.append(rot_matrix_affine(th_))
+            axis.append(0)
         else:
             vec_y = vec * (-1) if vec[1] < 0.0 else vec
             l.append([rotate2d(vec_y, theta=-0.5 * pi), vec_y])
             th_ = theta(rotate2d(vec_y, theta=-0.5 * pi))
             th.append(th_)
             thr.append(rot_matrix_affine(th_))
-    return np.asarray(l), np.asarray(th), np.asarray(thr)
+            axis.append(1)
+    return np.asarray(l), np.asarray(th), np.asarray(thr), np.asarray(axis)
