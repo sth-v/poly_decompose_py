@@ -45,6 +45,11 @@ def rotate2d(vec, theta):
     return rot_matrix(theta) @ np.asarray(vec)
 
 
+def vec_from_point_chain(point_chain):
+    ptch = np.asarray(point_chain).copy()
+    return np.roll(ptch, 1, axis=0) - ptch
+
+
 def basis_to_custom_canonical_form(vecs):
     x_like = [0, 3, 4, 7]  # y_like = [1, 2, 5, 6]
 
@@ -77,4 +82,4 @@ vec_l = [[40.27832240751013, 17.184793210588396], [-90.76909511670237, 342.68958
  [72.29789360892028, 20.2681416394189],[-90.92466560343746, 319.88111454155296]]
 
 l, th, thr = basis_to_custom_canonical_form(np.asarray(vec_l))
-print(thr)
+print(l)
