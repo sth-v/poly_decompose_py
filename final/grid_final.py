@@ -2,26 +2,32 @@ from shapely.geometry import MultiPoint
 import numpy as np
 from shapely.geometry import Polygon, Point
 
-bounds = [[-368.795886, 374.061718], [-360.627251, 87.64359], [-412.819468, 28.560247], [-418.991724, -317.973435],
+'''bounds = [[-368.795886, 374.061718], [-360.627251, 87.64359], [-412.819468, 28.560247], [-418.991724, -317.973435],
           [30.744717, -375.504963],
           [460.65629, -365.913077], [460.503455, 71.040541], [97.37011, 158.431257], [-165.661215, 177.590117],
           [-160.623469, 568.751626],
           [-226.388709, 569.004352], [-227.04209, 603.066681], [-294.582026, 603.410702], [-295.060543, 372.726072],
-          [-368.795886, 374.061718]]
+          [-368.795886, 374.061718]]'''
+bounds = [[-517.420304, 269.309141],
+[-16.209736, 191.231113],
+[493.816093, 294.495602],
+[632.341627, -184.047151],
+[-13.69109, -343.981177],
+[-625.722085, -128.636938]]
+
 
 
 class GridOnPolygon:
-    def __init__(self, split_points, cellsx, cellsy, amount, road=40):
+    def __init__(self, split_points, cellsx, cellsy, road=40):
         self.split_points = split_points
         self.cells_x = cellsx
         self.cells_y = cellsy
-        self.amount = amount
         self.road = road
         self.bound = np.asarray(MultiPoint([i for i in self.split_points]).bounds).reshape((2, 2)).T
         self.rect = np.array(np.meshgrid(self.bound[0], self.bound[1])).T.reshape(-1, 2)
         self.points_proj, self.vec_x, self.vec_y = self.points_projected()
         self.dist_vals, self.dist_coors = self.distances()
-        self.x, self.y = self.coordinates_dist()
+        self.x, self.y = self.grid_options()
 
     # По сути подготовка к расчету ячеек - точки развернутого полигона проецируются на ректангл
     # и дальше между ними считаются расстояния и убиваются слишком короткие. Эту часть хорошо бы упростить
@@ -64,10 +70,6 @@ class GridOnPolygon:
                     d.append(sum_v + i[v])
                     sum_v = 0
             values.append(d)
-            # clear_list = np.delete(self.points_proj[p], values_to_del, axis=0)
-            # distance.append(
-            # np.stack((np.delete(clear_list, -1, axis=0), np.delete(np.roll(clear_list, -1, axis=0), -1, axis=0)),
-            # axis=1))
             distance.append(np.delete(self.points_proj[p], values_to_del, axis=0).tolist())
         return values, distance
 
@@ -75,7 +77,7 @@ class GridOnPolygon:
 
     def find_numbers(self, ans, temp, dist, vals, index):
         if dist == 0:
-            if len(ans) < 5:
+            if len(ans) < 1:
                 ans.append(np.cumsum(np.asarray([item for sublist in temp for item in sublist])).tolist())
             else:
                 pass
@@ -101,7 +103,6 @@ class GridOnPolygon:
         combination_x = []
         combination_y = []
         for i, val in enumerate(self.dist_vals[0]):
-            print(self.dist_coors[0][i][0])
             ans = []
             temp = []
             self.find_numbers(ans, temp, round(val), self.cells_x, 0)
@@ -113,31 +114,45 @@ class GridOnPolygon:
             combination_y.append(self.grid_gen(self.dist_coors[1][i][1], ans, self.vec_y, 1))
         return combination_x, combination_y
 
-    def meshgrid(self):
+    def constr(self, ind):
         grid = []
-        if len(self.x) <= len(self.y):
-            for x_, y_ in zip(self.x, self.y[0:len(self.x)]):
-                xx,yy = np.meshgrid(np.asarray(x_), np.asarray(y_), indexing='xy')
-                grid.append(np.stack([xx,yy]).T)
-        else:
-            for x_, y_ in zip(self.x[0:len(self.y)], self.y):
-                xx,yy = np.meshgrid(np.asarray(x_), np.asarray(y_), indexing='xy')
-                grid.append(np.stack([xx,yy]).T)
+        x_lists = [list(list(zip(*self.x))[ind])]
+        y_lists = [list(list(zip(*self.y))[ind])]
+        for xx, yy in zip(x_lists, y_lists):
+            x_ = [item for sublist in xx for item in sublist]
+            y_ = [item for sublist in yy for item in sublist]
+            xxx, yyy = np.meshgrid(np.asarray(x_), np.asarray(y_), indexing='xy')
+            grid.append(np.stack([xxx, yyy]).T.tolist())
         return grid
 
+    def meshgrid(self):
+        minLength_x = min(len(x) for x in self.x)
+        minLength_y = min(len(y) for y in self.y)
+        grids = []
+        if minLength_x <= minLength_y:
+            for i in range(0, minLength_x):
+                gridding = self.constr(i)
+                grids.append(gridding)
+        else:
+            for i in range(0, minLength_y):
+                gridding_y = self.constr(i)
+                grids.append(gridding_y)
 
-Cx = list(range(60, 160))
-Cy = list(range(58, 100))
+        return grids
+
+
+
+Cx = list(range(60, 120))
+Cy = list(range(60, 121))
 amount = 12
 road = 40
-b_bound = GridOnPolygon(bounds, Cx, Cy, amount, road)
-
+b_bound = GridOnPolygon(bounds, Cx, Cy, road)
 n, m = b_bound.distances()
-optx, opty = b_bound.grid_options()
+optx= b_bound.meshgrid()
 print(optx)
 
 
-def grid_from_intersect(coord, vals):
+'''def grid_from_intersect(coord, vals):
     grid = []
     x = np.cumsum(np.insert(np.array(vals[0]), 0, coord[0][0][0]))
     x_mid = (x[0:len(x) - 1] + np.roll(x, -1)[0:len(x) - 1]) / 2
@@ -160,4 +175,4 @@ def point_in_poly(coord, vals, poly):
     return ~np.asarray(result).reshape(len(grid), len(grid[0])).T
 
 
-v = point_in_poly(m, n, bounds)
+v = point_in_poly(m, n, bounds)'''
