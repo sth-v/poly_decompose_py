@@ -1,10 +1,16 @@
 from shapely.geometry import MultiPoint
 import numpy as np
 from itertools import product, chain
+import shapely
 import random
+from shapely.geometry import Polygon, Point
 
-
-bounds = [[-567.92818426945519, 205.88996628914117], [-557.82343157092316, -308.27260320317788], [-74.101119767263754, -304.36817975841376], [573.18474164892473, -253.6658965791683], [494.80897953203686, 201.53875055651079], [-55.109039246149862, 168.48478557309198]]
+bounds = [[-368.795886, 374.061718], [-360.627251, 87.64359], [-412.819468, 28.560247], [-418.991724, -317.973435],
+          [30.744717, -375.504963],
+          [460.65629, -365.913077], [460.503455, 71.040541], [97.37011, 158.431257], [-165.661215, 177.590117],
+          [-160.623469, 568.751626],
+          [-226.388709, 569.004352], [-227.04209, 603.066681], [-294.582026, 603.410702], [-295.060543, 372.726072],
+          [-368.795886, 374.061718]]
 
 
 class GridOnPolygon:
@@ -18,7 +24,7 @@ class GridOnPolygon:
         self.rect = np.array(np.meshgrid(self.bound[0], self.bound[1])).T.reshape(-1, 2)
         self.points_proj = self.points_projected()
         self.dist_vals, self.dist_coors = self.distances()
-        self.x, self.y = self.coordinates_dist()
+        # self.x, self.y = self.coordinates_dist()
 
     def points_projected(self):
         axes = [[self.rect[0], self.rect[2]], [self.rect[0], self.rect[1]]]
@@ -43,15 +49,15 @@ class GridOnPolygon:
         for p, i in enumerate(dist):
             values_to_del = []
             d = []
-            sum = 0
+            sum_v = 0
             for v in range(len(i)):
-                if i[v] + sum < 98 and v != len(i) - 1:
-                    sum += i[v]
+                if i[v] + sum_v < (min(self.cells_x)+road) and v != len(i) - 1:
+                    sum_v += i[v]
                     values_to_del.append(v + 1)
 
-                elif i[v] + sum < 98 and v == len(i) - 1:
-                    sum += i[v]
-                    d[-1] += sum
+                elif i[v] + sum_v < (min(self.cells_x)+road) and v == len(i) - 1:
+                    sum_v += i[v]
+                    d[-1] += sum_v
                     values_to_del.append(v)
 
                 else:
@@ -87,12 +93,13 @@ class GridOnPolygon:
 
         return combination
 
-    def coordinates_dist(self):
+    '''def coordinates_dist(self):
         fin_xx = []
         fin_yy = []
         for ii, vv in enumerate(self.dist_vals[0]):
             kk = []
             options = self.grid_options(round(vv), self.cells_x)
+            print(options)
             vec_one = self.dist_coors[0][ii][1] - self.dist_coors[0][ii][0]
             for o in options:
                 dist_l = 0
@@ -109,6 +116,7 @@ class GridOnPolygon:
         for ii, vv in enumerate(self.dist_vals[1]):
             kk = []
             options = self.grid_options(round(vv), self.cells_y)
+            print(options)
             vec_one = self.dist_coors[1][ii][1] - self.dist_coors[1][ii][0]
             for o in options:
                 dist_l = 0
@@ -133,18 +141,40 @@ class GridOnPolygon:
             for x_, y_ in zip(self.x[0:len(self.y)], self.y):
                 xx,yy = np.meshgrid(np.asarray(x_), np.asarray(y_), indexing='xy')
                 grid.append(np.stack([xx,yy]).T)
-        return grid
-
-
-
-
+        return grid'''
 
 
 Cx = list(range(58, 100))
 Cy = list(range(58, 100))
 amount = 12
-road = 50
+road = 40
 b_bound = GridOnPolygon(bounds, Cx, Cy, amount, road)
 
-n = b_bound.meshgrid()
-print(n)
+n, m = b_bound.distances()
+
+
+def grid_from_intersect(coord, vals):
+    grid = []
+    x = np.cumsum(np.insert(np.array(vals[0]), 0, coord[0][0][0][0]))
+    x_mid = (x[0:len(x) - 1] + np.roll(x, -1)[0:len(x) - 1]) / 2
+    y = np.cumsum(np.insert(np.array(vals[1]), 0, coord[0][0][0][1]))
+    y_mid = (y[0:len(y) - 1] + np.roll(y, -1)[0:len(y) - 1]) / 2
+    x__, y__ = np.meshgrid(x_mid, y_mid, indexing='xy')
+    grid = np.stack([x__, y__]).T
+    return np.asarray(grid)
+
+
+def point_in_poly(coord, vals, poly):
+    polygon = Polygon(poly)
+    grid = grid_from_intersect(coord, vals)
+
+    def point_in(d):
+        res = polygon.contains(Point(d.tolist()))
+        return res
+
+    result = list(map(point_in, grid.reshape(1, len(grid) * len(grid[0]), 2)[0]))
+    return ~np.asarray(result).reshape(len(grid), len(grid[0])).T
+
+
+v = point_in_poly(m, n, bounds)
+print(v.tolist())
