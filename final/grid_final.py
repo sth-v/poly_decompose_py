@@ -2,18 +2,18 @@ from shapely.geometry import MultiPoint
 import numpy as np
 from shapely.geometry import Polygon, Point
 
-'''bounds = [[-368.795886, 374.061718], [-360.627251, 87.64359], [-412.819468, 28.560247], [-418.991724, -317.973435],
+bounds = [[-368.795886, 374.061718], [-360.627251, 87.64359], [-412.819468, 28.560247], [-418.991724, -317.973435],
           [30.744717, -375.504963],
           [460.65629, -365.913077], [460.503455, 71.040541], [97.37011, 158.431257], [-165.661215, 177.590117],
           [-160.623469, 568.751626],
           [-226.388709, 569.004352], [-227.04209, 603.066681], [-294.582026, 603.410702], [-295.060543, 372.726072],
-          [-368.795886, 374.061718]]'''
-bounds = [[-517.420304, 269.309141],
+          [-368.795886, 374.061718]]
+'''bounds = [[-517.420304, 269.309141],
 [-16.209736, 191.231113],
 [493.816093, 294.495602],
 [632.341627, -184.047151],
 [-13.69109, -343.981177],
-[-625.722085, -128.636938]]
+[-625.722085, -128.636938]]'''
 
 
 
@@ -78,14 +78,15 @@ class GridOnPolygon:
     def find_numbers(self, ans, temp, dist, vals, index):
         if dist == 0:
             if len(ans) < 1:
-                ans.append(np.cumsum(np.asarray([item for sublist in temp for item in sublist])).tolist())
+                #ans.append(np.cumsum(np.asarray([item for sublist in temp for item in sublist])).tolist())
+                ans.append(np.cumsum(np.asarray(temp)).tolist())
             else:
                 pass
         for i in range(index, len(vals)):
             if (dist - self.road - vals[i]) >= 0:
-                temp.append([self.road // 2, vals[i], self.road // 2])
+                temp.append([vals[i] + self.road])
                 self.find_numbers(ans, temp, (dist - self.road - vals[i]), vals, i)
-                temp.remove([self.road // 2, vals[i], self.road // 2])
+                temp.remove([vals[i] + self.road])
 
     def grid_gen(self, coords, comb, vect, ind):
         iter_two = []
@@ -142,8 +143,8 @@ class GridOnPolygon:
 
 
 
-Cx = list(range(60, 120))
-Cy = list(range(60, 121))
+Cx = list(range(60, 160))
+Cy = list(range(60, 161))
 amount = 12
 road = 40
 b_bound = GridOnPolygon(bounds, Cx, Cy, road)
@@ -151,28 +152,3 @@ n, m = b_bound.distances()
 optx= b_bound.meshgrid()
 print(optx)
 
-
-'''def grid_from_intersect(coord, vals):
-    grid = []
-    x = np.cumsum(np.insert(np.array(vals[0]), 0, coord[0][0][0]))
-    x_mid = (x[0:len(x) - 1] + np.roll(x, -1)[0:len(x) - 1]) / 2
-    y = np.cumsum(np.insert(np.array(vals[1]), 0, coord[0][0][1]))
-    y_mid = (y[0:len(y) - 1] + np.roll(y, -1)[0:len(y) - 1]) / 2
-    x__, y__ = np.meshgrid(x_mid, y_mid, indexing='xy')
-    grid = np.stack([x__, y__]).T
-    return np.asarray(grid)
-
-
-def point_in_poly(coord, vals, poly):
-    polygon = Polygon(poly)
-    grid = grid_from_intersect(coord, vals)
-
-    def point_in(d):
-        res = polygon.contains(Point(d.tolist()))
-        return res
-
-    result = list(map(point_in, grid.reshape(1, len(grid) * len(grid[0]), 2)[0]))
-    return ~np.asarray(result).reshape(len(grid), len(grid[0])).T
-
-
-v = point_in_poly(m, n, bounds)'''
