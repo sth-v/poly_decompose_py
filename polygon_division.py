@@ -65,6 +65,20 @@ def points_to_point_chain(points, length=3):
     return np.asarray(list(zip(*zip_list)))
 
 
+
+def is_convex(points_list, polygon):
+    vals = list(islice(cycle(range(len(points_list))), 0, len(points_list) + 2))
+    concave = []
+    for i in range(len(points_list)):
+        line = LineString([points_list[vals[i]], points_list[vals[i + 2]]])
+        if polygon.covers(line):
+            pass
+        else:
+            concave.append(points_list[vals[i + 1]])
+    return concave
+
+
+
 def vector_search(point_list, key):
     cr = []
     n = list(islice(cycle(range(len(point_list))), 0, len(point_list) + 2))
@@ -79,8 +93,9 @@ def vector_search(point_list, key):
             pass
     cross = [*cr, cr[0] + cr[-1] + 1]
     double_points = [*range(len(point_list)), *range(len(point_list))]
-    segments = [double_points[cross[c]:cross[c + 1]] for c in range(len(cross) - 1)]
+    segments = [double_points[cross[c]:cross[c + 1] + 1] for c in range(len(cross) - 1)]
     return segments
+
 
 c = vector_search(coor_list, 0.7)
 print(c)
@@ -112,6 +127,7 @@ data = np.asarray([[0,0.5056470286775836, 0.12269896816725095, 0.999908136172410
         [0.9999081361724104, 0.855807499739078, 0.9940158642276464, 0,0.010066604913686106, 0.012398300333692436],
         [0.9999939171214292, 0.8609715349701016, 0.992865864172556, 0.010066604913686106,0, 0.002331840941869334],
         [0.9999993317127042, 0.8621552924233207, 0.9925851239501953, 0.012398300333692436, 0.002331840941869334,0]])
+
 
 
 
